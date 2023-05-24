@@ -1,0 +1,6 @@
+# TODO should maintain state elsewhere (also, dynamodb locking)
+
+# S3
+#bucket = "terraform-tfstate"
+#region = "us-east-1"
+#key    = "terraform.tfstate"
