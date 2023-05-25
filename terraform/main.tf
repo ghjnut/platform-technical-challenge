@@ -7,10 +7,10 @@ resource "aws_dynamodb_table" "checkin" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "Key"
+  hash_key       = "id"
 
   attribute {
-    name = "Key"
+    name = "id"
     type = "S"
   }
 
