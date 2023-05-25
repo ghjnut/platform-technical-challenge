@@ -37,6 +37,8 @@ resource "aws_ecr_repository" "app" {
   #}
 }
 
+# TODO need logging
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function#cloudwatch-logging-and-permissions
 resource "aws_lambda_function" "checkin" {
   function_name = "${var.env}-checkin"
   timeout       = 5 # seconds
@@ -46,6 +48,26 @@ resource "aws_lambda_function" "checkin" {
 
   image_config {
     command = ["index.checkin"]
+  }
+
+  environment {
+    variables = {
+      ENVIRONMENT       = var.env
+      DYNAMO_TABLE_NAME = aws_dynamodb_table.checkin.name
+      REGION            = data.aws_region.current.name
+    }
+  }
+}
+
+resource "aws_lambda_function" "backend" {
+  function_name = "${var.env}-backend"
+  timeout       = 5 # seconds
+  image_uri     = "${aws_ecr_repository.app.repository_url}:${var.env}"
+  package_type  = "Image"
+  role          = aws_iam_role.lambda.arn
+
+  image_config {
+    command = ["index.backend"]
   }
 
   environment {
