@@ -1,5 +1,26 @@
 data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
+resource "aws_dynamodb_table" "checkin" {
+  name           = "${var.env}-checkin"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "Key"
+
+  attribute {
+    name = "Key"
+    type = "S"
+  }
+
+  # TODO across the application
+  #tags = {
+  #  Name        =
+  #  Environment =
+  #}
+}
+
 # TODO a little bit of funkiness promoting artifacts if there's a repo per env
 resource "aws_ecr_repository" "app" {
   name = "inception-health/app"
@@ -26,7 +47,9 @@ resource "aws_lambda_function" "checkin" {
 
   environment {
     variables = {
-      ENVIRONMENT = var.env
+      ENVIRONMENT       = var.env
+      DYNAMO_TABLE_NAME = aws_dynamodb_table.checkin.name
+      REGION            = data.aws_region.current.name
     }
   }
 }
