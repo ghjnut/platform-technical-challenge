@@ -42,8 +42,11 @@ resource "aws_lambda_function" "checkin" {
   timeout       = 5 # seconds
   image_uri     = "${aws_ecr_repository.app.repository_url}:${var.env}"
   package_type  = "Image"
+  role          = aws_iam_role.lambda.arn
 
-  role = aws_iam_role.lambda.arn
+  image_config {
+    command = ["index.checkin"]
+  }
 
   environment {
     variables = {
