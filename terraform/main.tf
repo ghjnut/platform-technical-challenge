@@ -15,3 +15,18 @@ resource "aws_ecr_repository" "app" {
   #  scan_on_push = true
   #}
 }
+
+resource "aws_lambda_function" "checkin" {
+  function_name = "${var.env}-checkin"
+  timeout       = 5 # seconds
+  image_uri     = "${aws_ecr_repository.app.repository_url}:${var.env}"
+  package_type  = "Image"
+
+  role = aws_iam_role.lambda.arn
+
+  environment {
+    variables = {
+      ENVIRONMENT = var.env
+    }
+  }
+}
