@@ -78,3 +78,40 @@ resource "aws_lambda_function" "backend" {
     }
   }
 }
+
+# API Gateway
+
+resource "aws_apigatewayv2_api" "backend" {
+  name          = "${var.env}-backend"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "backend" {
+  api_id      = aws_apigatewayv2_api.backend.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_integration" "backend" {
+  api_id                 = aws_apigatewayv2_api.backend.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.backend.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "backend" {
+  api_id    = aws_apigatewayv2_api.backend.id
+  route_key = "ANY /"
+  # a little funky how we have to prefix "integrations", but I couldn't find a fully qualified var to reference
+  target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
+}
+
+resource "aws_lambda_permission" "backend_apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.backend.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # The /*/* portion grants access from any method on any resource within the API Gateway "REST API".
+  source_arn = "${aws_apigatewayv2_api.backend.execution_arn}/*/*"
+}
