@@ -50,5 +50,5 @@ popd
 
 # provision all infra
 pushd terraform
-terraform apply -auto-approve dev.out
+terraform apply -auto-approve build/${ENVIRONMENT}.out | grep app_backend_api_gateway_endpoint
 popd
