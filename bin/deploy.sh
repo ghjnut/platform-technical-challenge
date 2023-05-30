@@ -28,9 +28,10 @@ then
 fi
 
 
+# TODO can we make this work with build/env.out?
 # provision ECR repo for docker image
 pushd terraform
-DOCKER_IMAGE=$(terraform apply -auto-approve -target aws_ecr_repository.app |grep "ecr_repository_url" |awk '{print $3}' |tr -d \")
+DOCKER_IMAGE=$(terraform apply -auto-approve -target aws_ecr_repository.app |grep "ecr_repository_url" |tail -n 1 |awk '{print $3}' |tr -d '"')
 popd
 
 
