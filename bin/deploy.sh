@@ -13,11 +13,11 @@ ENVIRONMENT=dev
 #popd
 
 
-pushd terraform
+cd terraform
 # fails if terraform/terraform.tfvars is missing
 mkdir -p build
 terraform plan -out build/${ENVIRONMENT}.out
-popd
+cd ..
 
 
 echo "Proceed? [yes/no]"
@@ -30,13 +30,13 @@ fi
 
 # TODO can we make this work with build/env.out?
 # provision ECR repo for docker image
-pushd terraform
+cd terraform
 DOCKER_IMAGE=$(terraform apply -auto-approve -target aws_ecr_repository.app |grep "ecr_repository_url" |tail -n 1 |awk '{print $3}' |tr -d '"')
-popd
+cd ..
 
 
 # build + publish image
-pushd app
+cd app
 sudo docker build --tag "${DOCKER_IMAGE}:${ENVIRONMENT}" --file Dockerfile.lambda .
 
 aws ecr get-login-password \
@@ -46,10 +46,10 @@ aws ecr get-login-password \
   --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
 sudo docker push "${DOCKER_IMAGE}:${ENVIRONMENT}"
-popd
+cd ..
 
 
 # provision all infra
-pushd terraform
+cd terraform
 terraform apply -auto-approve build/${ENVIRONMENT}.out | grep app_backend_api_gateway_endpoint
-popd
+cd ..
