@@ -79,6 +79,7 @@ resource "aws_lambda_function" "backend" {
   }
 }
 
+
 # API Gateway
 
 resource "aws_apigatewayv2_api" "backend" {
@@ -103,7 +104,7 @@ resource "aws_apigatewayv2_route" "backend" {
   api_id    = aws_apigatewayv2_api.backend.id
   route_key = "ANY /"
   # a little funky how we have to prefix "integrations", but I couldn't find a fully qualified var to reference
-  target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
+  target = "integrations/${aws_apigatewayv2_integration.backend.id}"
 }
 
 resource "aws_lambda_permission" "backend_apigw" {
@@ -114,4 +115,26 @@ resource "aws_lambda_permission" "backend_apigw" {
 
   # The /*/* portion grants access from any method on any resource within the API Gateway "REST API".
   source_arn = "${aws_apigatewayv2_api.backend.execution_arn}/*/*"
+}
+
+
+# EVENT BRIDGE TRIGGER
+
+# TODO timeout?
+resource "aws_cloudwatch_event_rule" "checkin_lambda_event_rule" {
+  name                = "${var.env}-checkin-lambda-event-rule"
+  schedule_expression = "rate(2 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "checkin_lambda_target" {
+  arn  = aws_lambda_function.checkin.arn
+  rule = aws_cloudwatch_event_rule.checkin_lambda_event_rule.name
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_rw_fallout_retry_step_deletion_lambda" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.checkin.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.checkin_lambda_event_rule.arn
 }
