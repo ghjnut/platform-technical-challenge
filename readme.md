@@ -1,5 +1,34 @@
 # Inception Health Technical Challenge
 
+## TODO
+- ?build artifact (docker-image?)
+    - look into build options, probably target lambdas
+        - ? not familiar with express.js
+    - different `CMD`s (`index.checkin`, `index.backend`)
+    - (optional) packer build artifact (docker-image or..?)
+- (publish artifact)
+    - ECR
+    - push directly to lambda
+- create auxillary infra
+    - init/retrieve dynamodb
+    - !api-gateway
+        - before or after lambda?
+        - !HTTP_API
+        - https
+    - domain -> api-gateway
+    - create lambdas
+        - checkin
+        - backend
+        - smoke test (call checkin)
+            - cron frequency?
+    - connect lambda to api-gateway
+
+## MONITOR
+- db connections
+
+## LOOK INTO
+- db connections (managing across lambdas)
+
 ## Assignment
 
 * Using the tools and language of your choice, write code that deploys the application provided in `app/` using a single command.

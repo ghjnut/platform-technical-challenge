@@ -1,0 +1,10 @@
+# TODO should maintain state elsewhere (also, dynamodb locking)
+
+#terraform {
+#  backend "local" {
+#    path = "relative/path/to/terraform.tfstate"
+#  }
+#}
+
+# local
+path = "state/terraform.tfstate"
